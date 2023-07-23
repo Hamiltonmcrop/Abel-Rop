@@ -26,27 +26,23 @@ bool init_logical_memory(PCB *p, uint32_t code_size) {
 	// do. High-level objectives are:
     uint32_t num_code_frames = bytes_to_frames(code_size);
 
-    //12KB 3 frames
     uint32_t num_user_frames = bytes_to_frames(1024 * 12);
 
-    //4KB 1 frame
     uint32_t kernel_stack_frames = bytes_to_frames(4096);
 
     uint32_t cstart = (uint32_t) alloc_frames(num_code_frames, USER_ALLOC);
     uint32_t ustart = (uint32_t) alloc_frames(num_user_frames, USER_ALLOC);
     uint32_t kstart = (uint32_t) alloc_frames(kernel_stack_frames, KERNEL_ALLOC);
-    
-    //4KB page directory
-    uint32_t dframes = bytes_to_frames(4096);//for page directory
-    uint32_t pframes = bytes_to_frames(4096 * 2);//for page table
-    
+    /**
+     * calculate the number of frames 
+    */
+    uint32_t dframes = bytes_to_frames(4096);
+    uint32_t pframes = bytes_to_frames(4096 * 2);
     uint32_t dfstart = (uint32_t) alloc_frames(dframes, KERNEL_ALLOC);
-    //for the page table
     uint32_t ptstart = (uint32_t) alloc_frames(pframes, KERNEL_ALLOC);
 
     PTE* ptentry = (PTE*) (ptstart + KERNEL_BASE);
 
-    //declare an iterator
     int i;
 
     for(i = 0; i < 1024; i++)
@@ -58,26 +54,27 @@ bool init_logical_memory(PCB *p, uint32_t code_size) {
         else ptentry[i] = 0;
     }
 
-    //2nd PTE
     for(i = 0; i < 1024; i++)
     {
-        //last iter is the kernel stack
         if(i == 1023)
         {
             ptentry[i + 1024] = kstart | PTE_PRESENT | PTE_READ_WRITE;
         }
 
-        //handle user stack
+        /**
+         * handle user stack
+        */
         else if((i < 1023) && (i > 1019))
         {
             ptentry[i + 1024] = ustart + ((i - 1020) * 4096) | PTE_PRESENT | PTE_USER_SUPERVISOR;
         }
 
-        //otherwise page table is 0
         else ptentry[i + 1024] = 0;
     }
 
-    //handle page directory table
+    /**
+     * handle page directory table
+    */
     PDE* pdtable = (PDE*) (dfstart + KERNEL_BASE);
     uint32_t paddress = (uint32_t) dfstart;
     for(i = 0; i < 1024; i++)
@@ -87,12 +84,12 @@ bool init_logical_memory(PCB *p, uint32_t code_size) {
             paddress = (uint32_t) pframes;
             pdtable[i] = paddress | PDE_PRESENT | PDE_READ_WRITE | PDE_USER_SUPERVISOR;
         }
-        else if(i == 766) //stack starts here
+        else if(i == 766)
         {
             paddress = (uint32_t) ptstart + 4096;
         }
 
-        else if(i == 768) //2nd case + 2
+        else if(i == 768)
         {
             pdtable[i] = k_page_directory[768];
         }
@@ -238,5 +235,3 @@ void zero_out_pages(void *base, uint32_t n_pages) {
 	for (i=0; i<1024*n_pages; i++)
 		*((uint32_t *)((uint32_t)base + i)) = 0;
 }
-
-
