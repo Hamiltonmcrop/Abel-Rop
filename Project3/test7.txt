@@ -1,12 +1,7 @@
--- Variable initialization with real and Boolean variables
+// Arithmetic operators
 
-function main returns real;
-    b: real is 5.3 + 1. - 4 / 2.0E-2;
-    c: boolean is b > 3.e2 and true or false;
+function main returns integer;
 begin
-    if c then 
-        b + 1.5 - c;
-    else
-        2.e+3;
-    endif;
+    9 + 2 - (5 - 1) / 2 rem 3 * 3 ** 1 ** 2;
 end;
+

@@ -1,10 +1,7 @@
--- Function with a reduction
+-- Function with arithmetic expression using real literals
 
-function main returns integer;
+function main returns real;
 begin
-    reduce +
-         2 * 8;
-         6;
-         23 + 6;
-    endreduce;    
+    8.3e+2 + 2.E-1 * (4.3E2 + 2.8) * 3.;
 end;
+
